@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import CountryDropdown from "../ui/CountryDropdown";
+import CountryDropdown from "../ui/Deprecated_CountryDropdown";
 
 export interface ICountryHolidays {
 	date: string;
@@ -19,6 +19,17 @@ type ConvertTimezoneFormProps = {
 	onSendData: (data: ICountryHolidays[] | null) => void;
 };
 
+// ADD TO PAGE.TSX
+// const [countryHolidays, setCountryHolidays] = useState<ICountryHolidays[] | null>(null);
+
+// useEffect(() => {
+// 	console.log(countryHolidays);
+// }, [countryHolidays]);
+
+// const handleChildData = (data: ICountryHolidays[] | null) => {
+// 	setCountryHolidays(data);
+// };
+
 const ConvertTimezoneForm: React.FC<ConvertTimezoneFormProps> = ({ onSendData }) => {
 	const [countryFromCode, setCountryFromCode] = useState("");
 	const [countryToCode, setCountryToCode] = useState("");
@@ -29,9 +40,9 @@ const ConvertTimezoneForm: React.FC<ConvertTimezoneFormProps> = ({ onSendData })
 		if (countryToCode == "") {
 			console.log("select a valid input!");
 		} else {
-			fetch(`https://date.nager.at/api/v3/NextPublicHolidays/${countryToCode}`).then((res) =>
-				res.json().then((res) => onSendData(res))
-			);
+			fetch(`https://date.nager.at/api/v3/NextPublicHolidays/${countryToCode}`)
+				.then((res) => res.json())
+				.then((res) => onSendData(res));
 		}
 	};
 

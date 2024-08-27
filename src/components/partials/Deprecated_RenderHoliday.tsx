@@ -1,4 +1,4 @@
-import { ICountryHolidays } from "./ConvertTimezoneForm";
+import { ICountryHolidays } from "./Deprecated_ConvertTimezoneForm";
 
 type RenderHolidayProps = {
 	countryHolidays: ICountryHolidays[] | null;
