@@ -1,4 +1,4 @@
-import { ICountryHolidays } from "./Deprecated_ConvertTimezoneForm";
+import { ICountryHolidays } from "./TestNagerDateAPI";
 
 type RenderHolidayProps = {
 	countryHolidays: ICountryHolidays[] | null;
