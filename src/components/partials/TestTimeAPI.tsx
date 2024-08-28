@@ -2,37 +2,66 @@
 
 import { useEffect, useState } from "react";
 
-interface ITimezoneInformation {
+interface TimezoneConversion {
+	convertTo: TimezoneInformation;
+	convertFrom: TimezoneInformation;
+}
+
+interface TimezoneInformation {
 	date: string;
 	time: string;
 	timezone: string;
 }
 
+interface GeoCoordinate {
+	latitude: number;
+	longitude: number;
+}
+
 const TestTimeAPI = () => {
-	const [latitude, setLatitude] = useState(0);
-	const [longitude, setLongitude] = useState(0);
-	const [responseFrom, setResponseFrom] = useState<ITimezoneInformation>();
-	const [timezoneFrom, setTimezoneFrom] = useState("");
-	const [responseTo, setResponseTo] = useState<ITimezoneInformation>();
-	const [timezoneTo, setTimezoneTo] = useState("");
+	const [coordinateTo, setCoordinateTo] = useState<GeoCoordinate>({ latitude: 0, longitude: 0 });
+	const [coordinateFrom, setCoordinateFrom] = useState<GeoCoordinate>({ latitude: 0, longitude: 0 });
+	// for future updates, timezone information should use arrays instead of objects. When using arrays, the 0th index is the convertFrom, and the i-th index is the convertTo.
+	const [timezoneInformation, setTimezoneInformation] = useState<TimezoneConversion>();
 
 	useEffect(() => {
-		console.log("responseFrom = ", responseFrom);
-		if (responseFrom) {
-			setTimezoneFrom(responseFrom.timezone);
-		}
-	}, [responseFrom]);
-
-	useEffect(() => {
-		console.log("timezoneFrom = ", timezoneFrom);
-	}, [timezoneFrom]);
+		console.log(timezoneInformation);
+	}, [timezoneInformation]);
 
 	const handleSubmit = () => {
-		fetch(`https://timeapi.io/api/time/current/coordinate?latitude=${latitude}&longitude=${longitude}`)
-			.then((res) => res.json())
-			.then((res) => {
-				setResponseFrom({ date: res.date, time: res.time, timezone: res.timeZone });
-			});
+		fetchTimezoneFromCoordinates();
+	};
+
+	const fetchTimezoneFromCoordinates = async () => {
+		if (coordinateTo && coordinateFrom) {
+			try {
+				const responses = await Promise.all([
+					fetch(
+						`https://timeapi.io/api/time/current/coordinate?latitude=${coordinateFrom.latitude}&longitude=${coordinateFrom.longitude}`
+					),
+					fetch(
+						`https://timeapi.io/api/time/current/coordinate?latitude=${coordinateTo.latitude}&longitude=${coordinateTo.longitude}`
+					),
+				]);
+
+				const rawData = await Promise.all(responses.map((response) => response.json()));
+
+				// if timezoneInformation uses array, use rawData.map to add objects instead of hard-coding.
+				const dataTo: TimezoneInformation = {
+					date: rawData[0].date,
+					time: rawData[0].time,
+					timezone: rawData[0].timeZone,
+				};
+				const dataFrom: TimezoneInformation = {
+					date: rawData[1].date,
+					time: rawData[1].time,
+					timezone: rawData[1].timeZone,
+				};
+				setTimezoneInformation({ convertFrom: dataTo, convertTo: dataFrom });
+			} catch (err) {
+				console.log(err);
+			}
+		}
 	};
 
 	return (
@@ -41,16 +70,51 @@ const TestTimeAPI = () => {
 				<input
 					type="number"
 					className="border-2 border-black"
-					value={latitude}
+					value={coordinateFrom?.latitude}
 					name="latitude"
-					onChange={(e) => setLatitude(e.target.valueAsNumber)}
+					onChange={(e) =>
+						setCoordinateFrom((prevState) => ({
+							...prevState,
+							latitude: e.target.valueAsNumber,
+						}))
+					}
 				/>
 				<input
 					type="number"
 					className="border-2 border-black"
-					value={longitude}
+					value={coordinateFrom?.longitude}
 					name="longitude"
-					onChange={(e) => setLongitude(e.target.valueAsNumber)}
+					onChange={(e) =>
+						setCoordinateFrom((prevState) => ({
+							...prevState,
+							longitude: e.target.valueAsNumber,
+						}))
+					}
+				/>
+				<p>break</p>
+				<input
+					type="number"
+					className="border-2 border-black"
+					value={coordinateTo?.latitude}
+					name="latitude"
+					onChange={(e) =>
+						setCoordinateTo((prevState) => ({
+							...prevState,
+							latitude: e.target.valueAsNumber,
+						}))
+					}
+				/>
+				<input
+					type="number"
+					className="border-2 border-black"
+					value={coordinateTo?.longitude}
+					name="longitude"
+					onChange={(e) =>
+						setCoordinateTo((prevState) => ({
+							...prevState,
+							longitude: e.target.valueAsNumber,
+						}))
+					}
 				/>
 				<button onClick={() => handleSubmit()} className="border-2 border-black p-2">
 					Submit
