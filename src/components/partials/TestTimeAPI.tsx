@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-interface TimezoneConversion {
-	convertTo: TimezoneInformation;
+interface TimezoneConversionData {
 	convertFrom: TimezoneInformation;
+	convertTo: TimezoneInformation;
 }
 
 interface TimezoneInformation {
@@ -22,7 +22,7 @@ const TestTimeAPI = () => {
 	const [coordinateTo, setCoordinateTo] = useState<GeoCoordinate>({ latitude: 0, longitude: 0 });
 	const [coordinateFrom, setCoordinateFrom] = useState<GeoCoordinate>({ latitude: 0, longitude: 0 });
 	// for future updates, timezone information should use arrays instead of objects. When using arrays, the 0th index is the convertFrom, and the i-th index is the convertTo.
-	const [timezoneInformation, setTimezoneInformation] = useState<TimezoneConversion>();
+	const [timezoneInformation, setTimezoneInformation] = useState<TimezoneConversionData>();
 
 	useEffect(() => {
 		console.log(timezoneInformation);
