@@ -3,7 +3,7 @@
 import { useState } from "react";
 import CountryDropdown from "../ui/CountryDropdown";
 
-interface ICountryHolidays {
+export interface ICountryHolidays {
 	date: string;
 	localName: string;
 	name: string;
