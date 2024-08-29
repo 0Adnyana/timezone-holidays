@@ -27,10 +27,10 @@ const TestPhotonAPI = () => {
 
 			const properties = searchResult.features[0]?.properties;
 			if (properties) {
-				if (properties.type == "state") {
-					setGeneralLocation(`${properties.name}, ${properties.country}`);
+				if (properties.type == "city") {
+					setGeneralLocation(`${properties.name}, ${properties.state}, ${properties.country}`);
 				} else {
-					setGeneralLocation(`${properties.state}, ${properties.country}`);
+					setGeneralLocation(`${properties.city}, ${properties.state}, ${properties.country}`);
 				}
 			}
 		}
