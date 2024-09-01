@@ -27,10 +27,18 @@ const TestPhotonAPI = () => {
 
 			const properties = searchResult.features[0]?.properties;
 			if (properties) {
-				if (properties.type == "city") {
-					setGeneralLocation(`${properties.name}, ${properties.state}, ${properties.country}`);
+				if (properties.type == "city" || properties.type == "county") {
+					if (properties.state == undefined) {
+						setGeneralLocation(`${properties.name}, ${properties.country}`);
+					} else {
+						setGeneralLocation(`${properties.name}, ${properties.state}, ${properties.country}`);
+					}
 				} else {
-					setGeneralLocation(`${properties.city}, ${properties.state}, ${properties.country}`);
+					if (properties.state == undefined) {
+						setGeneralLocation(`${properties.country}`);
+					} else {
+						setGeneralLocation(`${properties.city}, ${properties.state}, ${properties.country}`);
+					}
 				}
 			}
 		}
