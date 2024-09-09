@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FeatureCollection, Position, Feature } from "geojson";
+import { FeatureCollection } from "geojson";
 
-interface IGeoCoordinates {
+interface GeoCoordinates {
 	latitutde: number;
 	longitude: number;
 }
@@ -11,7 +11,7 @@ interface IGeoCoordinates {
 const TestPhotonAPI = () => {
 	const [search, setSearch] = useState("");
 	const [searchResult, setSearchResult] = useState<FeatureCollection>();
-	const [geoCoordinates, setGeoCoordinates] = useState<IGeoCoordinates>();
+	const [geoCoordinates, setGeoCoordinates] = useState<GeoCoordinates>();
 	const [generalLocation, setGeneralLocation] = useState("");
 
 	useEffect(() => {
