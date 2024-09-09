@@ -20,14 +20,14 @@ interface TimezoneInformation {
 	timezone: string;
 }
 
-interface GeoCoordinate {
+interface GeoCoordinates {
 	latitude: number;
 	longitude: number;
 }
 
 const TestTimeAPI = () => {
-	const [coordinateFrom, setCoordinateFrom] = useState<GeoCoordinate>({ latitude: 35.6821936, longitude: 139.762221 });
-	const [coordinateTo, setCoordinateTo] = useState<GeoCoordinate>({ latitude: -8.6524973, longitude: 115.2191175 });
+	const [coordinateFrom, setCoordinateFrom] = useState<GeoCoordinates>({ latitude: 35.6821936, longitude: 139.762221 });
+	const [coordinateTo, setCoordinateTo] = useState<GeoCoordinates>({ latitude: -8.6524973, longitude: 115.2191175 });
 	// for future updates, timezone information should use arrays instead of objects. When using arrays, the 0th index is the convertFrom, and the i-th index is the convertTo.
 	const [timezoneInformation, setTimezoneInformation] = useState<TimezoneConversionData>();
 	const [timezoneIncrements, setTimezoneIncrements] = useState<TimezoneConversionData[]>();
@@ -40,91 +40,6 @@ const TestTimeAPI = () => {
 		fetchTimezoneFromCoordinates();
 		fetchTimezoneIncrements();
 	};
-
-	// const fetchTimezoneIncrements = async () => {
-	// 	if (timezoneInformation) {
-	// 		const initialData: TimezoneConversionData[] = [
-	// 			{
-	// 				...timezoneInformation,
-	// 			},
-	// 		];
-
-	// 		var currentConvertFrom: TimezoneInformation = {
-	// 			...timezoneInformation.convertFrom,
-	// 			time: { hour: timezoneInformation.convertFrom.time.hour, minute: 0 },
-	// 		};
-	// 		var currentConvertTo: TimezoneInformation = {
-	// 			...timezoneInformation.convertTo,
-	// 			time: { hour: timezoneInformation.convertTo.time.hour, minute: 0 },
-	// 		};
-	// 		console.log(currentConvertFrom.time.hour == 23, currentConvertTo.time.hour == 23);
-
-	// 		for (let i = 1; i <= 24; i++) {
-	// 			if (currentConvertFrom.time.hour == 23 || currentConvertTo.time.hour == 23) {
-	// 				try {
-	// 					const responses = await Promise.all([
-	// 						fetch("https://timeapi.io/api/calculation/current/increment", {
-	// 							method: "POST",
-	// 							headers: { "Content-Type": "application/json" },
-	// 							body: JSON.stringify({
-	// 								timeZone: currentConvertFrom.timezone,
-	// 								timeSpan: "00:01:00:00",
-	// 							}),
-	// 						}),
-	// 						fetch("https://timeapi.io/api/calculation/current/increment", {
-	// 							method: "POST",
-	// 							headers: { "Content-Type": "application/json" },
-	// 							body: JSON.stringify({
-	// 								timeZone: currentConvertTo.timezone,
-	// 								timeSpan: "00:01:00:00",
-	// 							}),
-	// 						}),
-	// 					]);
-
-	// 					const rawData = await Promise.all(responses.map((response) => response.json()));
-
-	// 					currentConvertFrom = { ...rawData[0] };
-	// 					currentConvertTo = { ...rawData[1] };
-	// 				} catch (err) {
-	// 					console.dir(err);
-	// 				}
-	// 			} else {
-	// 				currentConvertFrom = {
-	// 					...timezoneInformation.convertFrom,
-	// 					time: { hour: timezoneInformation.convertFrom.time.hour + i, minute: 0 },
-	// 				};
-	// 				currentConvertTo = {
-	// 					...timezoneInformation.convertTo,
-	// 					time: { hour: timezoneInformation.convertTo.time.hour + i, minute: 0 },
-	// 				};
-	// 			}
-
-	// 			initialData.push({
-	// 				convertFrom: { ...currentConvertFrom },
-	// 				convertTo: { ...currentConvertTo },
-	// 			});
-	// 		}
-
-	// 		setTimezoneIncrements(initialData);
-
-	// 		// try {
-	// 		// 	fetch("https://timeapi.io/api/calculation/current/increment", {
-	// 		// 		method: "POST",
-	// 		// 		headers: { "Content-Type": "application/json" },
-	// 		// 		body: JSON.stringify({
-	// 		// 			timeZone: timezoneInformation.convertFrom.timezone,
-	// 		// 			timeSpan: "00:02:00:00",
-	// 		// 		}),
-	// 		// 	})
-	// 		// 		.then((res) => res.json())
-	// 		// 		.then((res) => {
-	// 		// 			console.log(timezoneInformation.convertFrom), console.log(res);
-	// 		// 		});
-	// 		// } catch (err) {
-	// 		// 	console.dir(err);
-	// 		// }
-	// 	}
-	// };
 
 	const fetchTimezoneIncrements = async () => {
 		if (!timezoneInformation) return;
@@ -182,7 +97,6 @@ const TestTimeAPI = () => {
 
 					const rawData = await Promise.all(responses.map((response) => response.json()));
 					const data = await Promise.all(rawData.map((response) => response.calculationResult));
-					console.log(data);
 					if (rawData[0] && rawData[1]) {
 						currentConvertFrom = {
 							date: { day: data[0].day, month: data[0].month, year: data[0].year },
