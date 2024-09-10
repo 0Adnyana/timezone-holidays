@@ -2,20 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { FeatureCollection, Point } from "geojson";
-import { GeoCoordinate } from "@/context/CoordinatesContextProvider";
+import { GeoCoordinate, useCoordinatesContext } from "@/context/CoordinatesContextProvider";
 
-interface TimezoneInformation {
-	date: {
-		day: number;
-		month: number;
-		year: number;
-	};
-	time: {
-		hour: number;
-		minute: number;
-	};
-	timezone: string;
-}
+
 
 const validateInput = (input: string): string | null => {
 	const trimmedInput = input.trim();
@@ -27,10 +16,7 @@ const validateInput = (input: string): string | null => {
 
 const ConvertTimezoneForm = () => {
 	const [search, setSearch] = useState(["", ""]);
-	const [geoCoordinates, setGeoCoordinates] = useState<GeoCoordinate[] | null>(null);
-
-	const [timezoneInformation, setTimezoneInformation] = useState<TimezoneInformation[]>();
-	const [timezoneIncrements, setTimezoneIncrements] = useState<TimezoneInformation[][]>();
+	const { geoCoordinates, setGeoCoordinates } = useCoordinatesContext();
 
 	useEffect(() => {
 		console.log(geoCoordinates);
@@ -47,7 +33,7 @@ const ConvertTimezoneForm = () => {
 	const handleSubmit = async () => {
 		const validatedSearch = search.map(validateInput);
 		if (validatedSearch.includes(null)) {
-			alert("Please enter valid location names without special characters.");
+			alert("Enter a valid location!");
 			return;
 		}
 
