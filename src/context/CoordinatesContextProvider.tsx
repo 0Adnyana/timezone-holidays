@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState } from "react";
 
-type CoordinatesContextProviderProps = {
+type GeoInformationContextProviderProps = {
 	children: React.ReactNode;
 };
 
@@ -10,36 +10,46 @@ export type GeoCoordinate = {
 	longitude: number;
 };
 
+export type CountryCode = {
+	countryCode: string;
+};
+
 type GeoCoordinates = GeoCoordinate[] | null;
+type CountryCodes = CountryCode[] | null;
 
 type CoordinatesContext = {
 	geoCoordinates: GeoCoordinates;
 	setGeoCoordinates: React.Dispatch<React.SetStateAction<GeoCoordinates>>;
+	countryCodes: CountryCodes;
+	setCountryCodes: React.Dispatch<React.SetStateAction<CountryCodes>>;
 };
 
-export const CoordinatesContext = createContext<CoordinatesContext | null>(null);
+export const GeoInformationContext = createContext<CoordinatesContext | null>(null);
 
-const CoordinatesContextProvider = ({ children }: CoordinatesContextProviderProps) => {
+const GeoInformationContextProvider = ({ children }: GeoInformationContextProviderProps) => {
 	const [geoCoordinates, setGeoCoordinates] = useState<GeoCoordinates>(null);
+	const [countryCodes, setCountryCodes] = useState<CountryCodes>(null);
 
 	return (
-		<CoordinatesContext.Provider
+		<GeoInformationContext.Provider
 			value={{
 				geoCoordinates,
 				setGeoCoordinates,
+				countryCodes,
+				setCountryCodes,
 			}}
 		>
 			{children}
-		</CoordinatesContext.Provider>
+		</GeoInformationContext.Provider>
 	);
 };
 
-export default CoordinatesContextProvider;
+export default GeoInformationContextProvider;
 
-export function useCoordinatesContext() {
-	const context = useContext(CoordinatesContext);
+export function useGeoInformationContext() {
+	const context = useContext(GeoInformationContext);
 	if (!context) {
-		throw new Error("useCoordinatesContext must be used within a CoordinatesContextProvider");
+		throw new Error("useGeoInformationContext must be used within a GeoInformationContextProvider");
 	}
 
 	return context;
