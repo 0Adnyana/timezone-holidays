@@ -1,6 +1,6 @@
 "use client";
 
-import { useCoordinatesContext } from "@/context/CoordinatesContextProvider";
+import { useGeoInformationContext } from "@/context/CoordinatesContextProvider";
 import { useEffect, useState } from "react";
 
 interface TimezoneInformation {
@@ -14,16 +14,18 @@ interface TimezoneInformation {
 		minute: number;
 	};
 	timezone: string;
+	countryCode: string;
+	isHoliday: number | 200 | 204 | 400 | 404;
 }
 
 const RenderTimezone = () => {
-	const { geoCoordinates, setGeoCoordinates } = useCoordinatesContext();
+	const { geoInformations, setGeoInformations } = useGeoInformationContext();
 	const [timezoneInformations, settimezoneInformations] = useState<TimezoneInformation[]>();
 	const [timezoneIncrements, setTimezoneIncrements] = useState<TimezoneInformation[][]>(); // [timezone index][increment]
 
 	useEffect(() => {
 		fetchTimezoneFromCoordinates();
-	}, [geoCoordinates]);
+	}, [geoInformations]);
 
 	useEffect(() => {
 		console.log(timezoneInformations);
@@ -37,21 +39,33 @@ const RenderTimezone = () => {
 	}, [timezoneIncrements]);
 
 	const fetchTimezoneFromCoordinates = async () => {
-		if (geoCoordinates) {
+		if (geoInformations) {
 			try {
-				const rawDatas = await Promise.all(
-					geoCoordinates.map((geoCoordinate) => {
+				const rawTimezoneData = await Promise.all(
+					geoInformations.map((geoInformation) => {
 						return fetch(
-							`https://timeapi.io/api/time/current/coordinate?latitude=${geoCoordinate.latitude}&longitude=${geoCoordinate.longitude}`
+							`https://timeapi.io/api/time/current/coordinate?latitude=${geoInformation.latitude}&longitude=${geoInformation.longitude}`
 						).then((res) => res.json());
 					})
 				);
 
-				const initialtimezoneInformations: TimezoneInformation[] = rawDatas.map((rawData) => {
+				const holidayData = await Promise.all(
+					geoInformations.map((geoInformation) => {
+						return fetch(`https://date.nager.at/api/v3/isTodayPublicHoliday/${geoInformation.countryCode}`).then(
+							(res) => {
+								return res.status;
+							}
+						);
+					})
+				);
+
+				const initialtimezoneInformations: TimezoneInformation[] = rawTimezoneData.map((rawData, index) => {
 					return {
 						date: { day: rawData.day, month: rawData.month, year: rawData.year },
 						time: { hour: rawData.hour, minute: rawData.minute },
 						timezone: rawData.timeZone,
+						countryCode: geoInformations[index].countryCode,
+						isHoliday: holidayData[index],
 					};
 				});
 				settimezoneInformations(initialtimezoneInformations);
@@ -93,20 +107,27 @@ const RenderTimezone = () => {
 							}),
 						}).then((res) => res.json());
 
+						const isHoliday = await fetch(
+							`https://date.nager.at/api/v3/isTodayPublicHoliday/${currentConvert.countryCode}`
+						).then((res) => {
+							return res.status;
+						});
+
 						const calculationResult = data.calculationResult;
 
 						currentConvert = {
+							...currentConvert,
 							date: { day: calculationResult.day, month: calculationResult.month, year: calculationResult.year },
 							time: { hour: calculationResult.hour, minute: calculationResult.minute },
-							timezone: data.timeZone,
+							isHoliday: isHoliday,
 						};
 					} catch (err) {
 						console.log("API request failed", err);
 					}
 				} else {
 					currentConvert = {
-						...timezoneInformation,
-						time: { hour: (timezoneInformation.time.hour + i) % 24, minute: 0 },
+						...currentConvert,
+						time: { hour: (currentConvert.time.hour + 1) % 24, minute: 0 },
 					};
 				}
 				initialData.push(currentConvert);

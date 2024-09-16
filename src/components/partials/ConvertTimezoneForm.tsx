@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FeatureCollection, Point } from "geojson";
-import { GeoCoordinate, useCoordinatesContext } from "@/context/CoordinatesContextProvider";
-
-
+import { Point } from "geojson";
+import { useGeoInformationContext, GeoInformation, GeoInformations } from "@/context/CoordinatesContextProvider";
 
 const validateInput = (input: string): string | null => {
 	const trimmedInput = input.trim();
@@ -16,11 +14,11 @@ const validateInput = (input: string): string | null => {
 
 const ConvertTimezoneForm = () => {
 	const [search, setSearch] = useState(["", ""]);
-	const { geoCoordinates, setGeoCoordinates } = useCoordinatesContext();
+	const { geoInformations, setGeoInformations } = useGeoInformationContext();
 
 	useEffect(() => {
-		console.log(geoCoordinates);
-	}, [geoCoordinates]);
+		console.log(geoInformations);
+	}, [geoInformations]);
 
 	const handleInputChange = (index: number, value: string) => {
 		setSearch((prev) => {
@@ -39,9 +37,9 @@ const ConvertTimezoneForm = () => {
 
 		try {
 			const searchResults = await Promise.all(
-				validatedSearch.map((s) =>
+				validatedSearch.map((search) =>
 					fetch(
-						`https://photon.komoot.io/api/?q=${s}&lang=en&limit=1&layer=country&layer=state&layer=county&layer=city`
+						`https://photon.komoot.io/api/?q=${search}&lang=en&limit=1&layer=country&layer=state&layer=county&layer=city`
 					).then((res) => res.json())
 				)
 			);
@@ -50,17 +48,22 @@ const ConvertTimezoneForm = () => {
 				searchResults.map((searchResult) => searchResult.features[0]?.geometry)
 			).then((results) => results.filter((result): result is Point => result?.type === "Point"));
 
-			const initialGeoCoordinates: GeoCoordinate[] = geometries.map((geometry) => {
-				return { latitude: geometry.coordinates[1], longitude: geometry.coordinates[0] };
-			});
-
-			setGeoCoordinates(initialGeoCoordinates);
-
-			const properties = searchResults.map((searchResult) => searchResult.features[0]?.properties);
+			const initialGeoInformations: GeoInformations = [];
 			const location: string[] = [];
 
-			properties.forEach((property) => {
-				if (property) {
+			searchResults.forEach((searchResult, index) => {
+				const property = searchResult.features[0]?.properties;
+				const geometry = geometries[index];
+
+				if (property && geometry) {
+					const geoInfo: GeoInformation = {
+						latitude: geometry.coordinates[1],
+						longitude: geometry.coordinates[0],
+						countryCode: property.countrycode,
+					};
+
+					initialGeoInformations.push(geoInfo);
+
 					if (property.type === "city" || property.type === "county" || property.type === "state") {
 						if (property.state) {
 							location.push(`${property.name}, ${property.state}, ${property.country}`);
@@ -72,6 +75,8 @@ const ConvertTimezoneForm = () => {
 					}
 				}
 			});
+
+			setGeoInformations(initialGeoInformations);
 			setSearch(location);
 		} catch (err) {
 			console.log(err);
