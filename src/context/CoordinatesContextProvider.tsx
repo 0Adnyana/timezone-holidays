@@ -5,38 +5,34 @@ type GeoInformationContextProviderProps = {
 	children: React.ReactNode;
 };
 
+export type CountryCode = {
+	countryCode: string;
+};
+
 export type GeoCoordinate = {
 	latitude: number;
 	longitude: number;
 };
 
-export type CountryCode = {
-	countryCode: string;
-};
+export type GeoInformation = GeoCoordinate & CountryCode;
 
-type GeoCoordinates = GeoCoordinate[] | null;
-type CountryCodes = CountryCode[] | null;
+export type GeoInformations = GeoInformation[] | null;
 
 type CoordinatesContext = {
-	geoCoordinates: GeoCoordinates;
-	setGeoCoordinates: React.Dispatch<React.SetStateAction<GeoCoordinates>>;
-	countryCodes: CountryCodes;
-	setCountryCodes: React.Dispatch<React.SetStateAction<CountryCodes>>;
+	geoInformations: GeoInformations;
+	setGeoInformations: React.Dispatch<React.SetStateAction<GeoInformations>>;
 };
 
 export const GeoInformationContext = createContext<CoordinatesContext | null>(null);
 
 const GeoInformationContextProvider = ({ children }: GeoInformationContextProviderProps) => {
-	const [geoCoordinates, setGeoCoordinates] = useState<GeoCoordinates>(null);
-	const [countryCodes, setCountryCodes] = useState<CountryCodes>(null);
+	const [geoInformations, setGeoInformations] = useState<GeoInformations>(null);
 
 	return (
 		<GeoInformationContext.Provider
 			value={{
-				geoCoordinates,
-				setGeoCoordinates,
-				countryCodes,
-				setCountryCodes,
+				geoInformations,
+				setGeoInformations,
 			}}
 		>
 			{children}
