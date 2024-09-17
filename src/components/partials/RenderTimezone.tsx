@@ -85,15 +85,16 @@ const RenderTimezone = () => {
 
 			let currentConvert: TimezoneInformation = {
 				...timezoneInformation,
-				time: { hour: timezoneInformation.time.hour, minute: 0 },
+				time: { hour: timezoneInformation.time.hour, minute: timezoneInformation.time.minute },
 			};
 
 			for (let i = 1; i <= 24; i++) {
 				if (currentConvert.time.hour === 23) {
+					const paddedMinute = currentConvert.time.minute.toString().padStart(2, "0");
 					const paddedHour = currentConvert.time.hour.toString().padStart(2, "0");
 					const paddedDay = currentConvert.date.day.toString().padStart(2, "0");
 					const paddedMonth = currentConvert.date.month.toString().padStart(2, "0");
-					const dateTimeFormatted = `${currentConvert.date.year}-${paddedMonth}-${paddedDay} ${paddedHour}:00:00`;
+					const dateTimeFormatted = `${currentConvert.date.year}-${paddedMonth}-${paddedDay} ${paddedHour}:${paddedMinute}:00`;
 
 					try {
 						const data = await fetch("https://timeapi.io/api/calculation/custom/increment", {
@@ -127,7 +128,7 @@ const RenderTimezone = () => {
 				} else {
 					currentConvert = {
 						...currentConvert,
-						time: { hour: (currentConvert.time.hour + 1) % 24, minute: 0 },
+						time: { hour: (currentConvert.time.hour + 1) % 24, minute: currentConvert.time.minute },
 					};
 				}
 				initialData.push(currentConvert);
