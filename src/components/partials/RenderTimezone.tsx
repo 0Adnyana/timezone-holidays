@@ -137,7 +137,40 @@ const RenderTimezone = () => {
 		setTimezoneIncrements(initialTimezoneIncrements);
 	};
 
-	return <div>RenderTimezone</div>;
+	return (
+		<div className="flex flex-col space-y-4">
+			<div className="flex flex-row space-x-2">
+				{timezoneInformations?.map((item, index) => (
+					<div key={index} className="flex flex-col border-2 p-4">
+						<p>
+							{item.date.day.toString().padStart(2, "0")}-{item.date.month.toString().padStart(2, "0")}-{item.date.year}
+						</p>
+						<p>
+							{item.time.hour.toString().padStart(2, "0")}:{item.time.minute.toString().padStart(2, "0")}
+						</p>
+					</div>
+				))}
+			</div>
+
+			<div className="flex flex-row space-x-2">
+				{timezoneIncrements?.map((row, rowIndex) => (
+					<div key={rowIndex} className="flex flex-col space-y-4">
+						{row.map((item, index) => (
+							<div key={index} className="flex flex-col border-2 p-4">
+								<p>
+									{item.date.day.toString().padStart(2, "0")}-{item.date.month.toString().padStart(2, "0")}-
+									{item.date.year}
+								</p>
+								<p>
+									{item.time.hour.toString().padStart(2, "0")}:{item.time.minute.toString().padStart(2, "0")}
+								</p>
+							</div>
+						))}
+					</div>
+				))}
+			</div>
+		</div>
+	);
 };
 
 export default RenderTimezone;
