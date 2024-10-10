@@ -206,29 +206,34 @@ const ConverterCard = () => {
 					}}
 				/>
 
-				<div className="flex flex-col border-2 p-4">
-					<p>
-						{currentTime?.date.day.toString().padStart(2, "0")}-{currentTime?.date.month.toString().padStart(2, "0")}-
-						{currentTime?.date.year}
-					</p>
-					<p>
-						{currentTime?.time.hour.toString().padStart(2, "0")}:{currentTime?.time.minute.toString().padStart(2, "0")}
-					</p>
-				</div>
+				{currentTime && timezoneIncrements && (
+					<>
+						<div className="flex flex-col border-2 p-4">
+							<p>
+								{currentTime.date.day.toString().padStart(2, "0")}-{currentTime.date.month.toString().padStart(2, "0")}-
+								{currentTime.date.year}
+							</p>
+							<p>
+								{currentTime.time.hour.toString().padStart(2, "0")}:
+								{currentTime.time.minute.toString().padStart(2, "0")}
+							</p>
+						</div>
 
-				<ul className="flex flex-col space-y-2">
-					{timezoneIncrements?.map((item, index) => (
-						<li key={index} className="flex flex-col border-2 p-4">
-							<p>
-								{item.date.day.toString().padStart(2, "0")}-{item.date.month.toString().padStart(2, "0")}-
-								{item.date.year}
-							</p>
-							<p>
-								{item.time.hour.toString().padStart(2, "0")}:{item.time.minute.toString().padStart(2, "0")}
-							</p>
-						</li>
-					))}
-				</ul>
+						<ul className="flex flex-col space-y-2">
+							{timezoneIncrements.map((item, index) => (
+								<li key={index} className="flex flex-col border-2 p-4">
+									<p>
+										{item.date.day.toString().padStart(2, "0")}-{item.date.month.toString().padStart(2, "0")}-
+										{item.date.year}
+									</p>
+									<p>
+										{item.time.hour.toString().padStart(2, "0")}:{item.time.minute.toString().padStart(2, "0")}
+									</p>
+								</li>
+							))}
+						</ul>
+					</>
+				)}
 			</div>
 		</div>
 	);
