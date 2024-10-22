@@ -1,4 +1,6 @@
 import ConverterCard from "@/components/partials/ConverterCard";
+import Gogo from "@/components/partials/Gogo";
+import GlobalTimeContextProvider from "@/context/GlobalTimeContextProvider";
 
 export default function Home() {
 	return (
@@ -7,6 +9,9 @@ export default function Home() {
 				<ConverterCard></ConverterCard>
 				<ConverterCard></ConverterCard>
 				<ConverterCard></ConverterCard>
+				<GlobalTimeContextProvider>
+					<Gogo></Gogo>
+				</GlobalTimeContextProvider>
 			</div>
 		</main>
 	);
