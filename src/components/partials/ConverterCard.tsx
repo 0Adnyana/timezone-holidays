@@ -1,5 +1,6 @@
 "use client";
 
+import { useUtcTimeContext } from "@/context/GlobalTimeContextProvider";
 import { Point } from "geojson";
 import { useEffect, useState } from "react";
 
@@ -38,6 +39,7 @@ const ConverterCard = () => {
 	const [geoInformation, setGeoInformation] = useState<GeoInformation>();
 	const [currentTime, setCurrentTime] = useState<TimezoneInformation>();
 	const [timezoneIncrements, setTimezoneIncrements] = useState<TimezoneInformation[]>();
+	const { utcTime, utcHour } = useUtcTimeContext();
 
 	useEffect(() => {
 		console.log(geoInformation);

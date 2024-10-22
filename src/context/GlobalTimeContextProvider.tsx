@@ -1,41 +1,77 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type GlobalTimeContextProviderProps = {
+type UtcTimeContextProviderProps = {
 	children: React.ReactNode;
 };
 
-type GlobalTimeContextType = {
-	globalTime: string;
+type UtcTimeContextType = {
+	utcTime: string;
+	utcHour: string;
 };
 
-export const GlobalTimeContext = createContext<GlobalTimeContextType | null>(null);
+export const UtcTimeContext = createContext<UtcTimeContextType | null>(null);
 
-const GlobalTimeContextProvider = ({ children }: GlobalTimeContextProviderProps) => {
-	const [globalTime, setGlobalTime] = useState<string>("");
+const UtcTimeContextProvider = ({ children }: UtcTimeContextProviderProps) => {
+	const [utcTime, setUtcTime] = useState<string>("");
+	const [utcHour, setUtcHour] = useState<string>("");
+
+	const getUtcTime = () => {
+		const now = new Date();
+		const currentUtcTime = new Intl.DateTimeFormat("en-GB", {
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+			hour12: false,
+			timeZone: "UTC",
+		}).format(now);
+
+		const currentUtcHour = now.getUTCHours().toString().padStart(2, "0");
+
+		return {
+			currentUtcTime,
+			currentUtcHour,
+		};
+	};
 
 	useEffect(() => {
-		const timer = setInterval(() => setGlobalTime(new Date().toUTCString()), 1000);
-		return () => clearInterval(timer);
+		const timeNow = setInterval(() => {
+			const { currentUtcTime, currentUtcHour } = getUtcTime();
+			setUtcTime(currentUtcTime);
+
+			setUtcHour((prevHour) => {
+				if (prevHour !== currentUtcHour) {
+					console.log(`Hour changed to: ${currentUtcHour}`);
+
+					return currentUtcHour;
+				}
+				return prevHour;
+			});
+		}, 1000);
+
+		return () => {
+			clearInterval(timeNow);
+		};
 	}, []);
 
 	return (
-		<GlobalTimeContext.Provider
+		<UtcTimeContext.Provider
 			value={{
-				globalTime,
+				utcTime,
+				utcHour,
 			}}
 		>
 			{children}
-		</GlobalTimeContext.Provider>
+		</UtcTimeContext.Provider>
 	);
 };
 
-export default GlobalTimeContextProvider;
+export default UtcTimeContextProvider;
 
-export function useGlobalTimeContext() {
-	const context = useContext(GlobalTimeContext);
+export function useUtcTimeContext() {
+	const context = useContext(UtcTimeContext);
 	if (!context) {
-		throw new Error("useGlobalTimeContext must be used within a GlobalTimeContextProvider");
+		throw new Error("useUtcTimeContext must be used within a UtcTimeContextProvider");
 	}
 
 	return context;

@@ -1,14 +1,15 @@
 "use client";
 import { useGeoInformationContext } from "@/context/CoordinatesContextProvider";
-import { GlobalTimeContext, useGlobalTimeContext } from "@/context/GlobalTimeContextProvider";
+import { useUtcTimeContext } from "@/context/GlobalTimeContextProvider";
 import React, { useContext } from "react";
 
 const Gogo = () => {
-	const { globalTime } = useGlobalTimeContext();
+	const { utcTime, utcHour } = useUtcTimeContext();
 
 	return (
 		<div>
-			<p>{globalTime}</p>
+			<p>Global Time: {utcTime}</p>
+			<p>Global Hour: {utcHour}</p>
 		</div>
 	);
 };
