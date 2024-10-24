@@ -1,17 +1,21 @@
 "use client";
 
+import { useUtcTimeContext } from "@/context/UtcTimeContextProvider";
 import { Point } from "geojson";
 import { useEffect, useState } from "react";
 
 type TimezoneInformation = {
 	date: {
+		dateString?: string;
 		day: number;
 		month: number;
 		year: number;
 	};
 	time: {
+		timeString?: string;
 		hour: number;
 		minute: number;
+		seconds?: number;
 	};
 	timezone: string;
 	countryCode: string;
@@ -33,25 +37,50 @@ const validateInput = (input: string): string | null => {
 	return trimmedInput;
 };
 
+const calculateMinuteOffset = (utcOffsetSeconds: number, time: number): number => {
+	if (utcOffsetSeconds % 3600 == 1800) {
+		return (30 + time) % 60;
+	} else if (utcOffsetSeconds % 3600 == 2700) {
+		return (45 + time) % 60;
+	} else {
+		return (0 + time) % 60;
+	}
+};
+
+const padDateTime = (time: number): string => {
+	return time.toString().padStart(2, "0");
+};
+
 const ConverterCard = () => {
 	const [search, setSearch] = useState("");
 	const [geoInformation, setGeoInformation] = useState<GeoInformation>();
+
 	const [currentTime, setCurrentTime] = useState<TimezoneInformation>();
 	const [timezoneIncrements, setTimezoneIncrements] = useState<TimezoneInformation[]>();
+	const { utcHour, utcMinutes, utcSeconds } = useUtcTimeContext();
 
 	useEffect(() => {
-		console.log(geoInformation);
 		fetchTimezoneFromCoordinates();
-	}, [geoInformation]);
+	}, [geoInformation, utcHour]);
 
 	useEffect(() => {
-		console.log(currentTime);
-		fetchTimezoneIncrements();
-	}, [currentTime]);
+		if (!currentTime) return;
 
-	useEffect(() => {
-		console.log(timezoneIncrements);
-	}, [timezoneIncrements]);
+		const minuteOffsetted = calculateMinuteOffset(currentTime.utcOffsetSeconds, utcMinutes);
+		const timeFormatted = `${padDateTime(currentTime.time.hour)}:${padDateTime(minuteOffsetted)}:${padDateTime(
+			utcSeconds
+		)}`;
+
+		setCurrentTime({
+			...currentTime,
+			time: {
+				...currentTime.time,
+				timeString: timeFormatted,
+				minute: minuteOffsetted,
+				seconds: utcSeconds,
+			},
+		});
+	}, [utcMinutes, utcSeconds]);
 
 	const handleSubmit = async () => {
 		const validatedSearch = validateInput(search);
@@ -67,7 +96,6 @@ const ConverterCard = () => {
 
 			const geometry: Point = searchResult.features[0].geometry as Point;
 			const property = searchResult.features[0].properties;
-			// let location: string = "";
 
 			if (property && geometry) {
 				setGeoInformation({
@@ -109,45 +137,44 @@ const ConverterCard = () => {
 				`https://timeapi.io/api/timezone/coordinate?latitude=${geoInformation.latitude}&longitude=${geoInformation.longitude}`
 			).then((res) => res.json());
 
-			setCurrentTime({
-				date: { day: timeData.day, month: timeData.month, year: timeData.year },
+			const dateFormatted = `${padDateTime(timeData.day)}-${padDateTime(timeData.month)}-${timeData.year}`;
+
+			const initialCurrentTime: TimezoneInformation = {
+				date: { dateString: dateFormatted, day: timeData.day, month: timeData.month, year: timeData.year },
 				time: { hour: timeData.hour, minute: timeData.minute },
 				timezone: timezoneData.timeZone,
 				utcOffsetSeconds: timezoneData.currentUtcOffset.seconds,
 				countryCode: geoInformation.countryCode,
 				isHoliday: holidayData,
+			};
+
+			setCurrentTime({
+				...initialCurrentTime,
 			});
+
+			fetchTimezoneIncrements(initialCurrentTime);
 		} catch (err) {
 			console.log(err);
 		}
 	};
 
-	const fetchTimezoneIncrements = async () => {
-		if (!currentTime) return;
+	const fetchTimezoneIncrements = async (timeData: TimezoneInformation) => {
+		console.log("fetchTimezoneIncrements called");
+		if (!timeData) return;
 
 		const initialTimezoneIncrements: TimezoneInformation[] = [];
 
-		let minuteOffset; // for currentConvert -> India, Iran, and more have 30 minute offsets, Nepal has 45.
-		if (currentTime.utcOffsetSeconds % 3600 == 1800) {
-			minuteOffset = 30;
-		} else if (currentTime.utcOffsetSeconds % 3600 == 2700) {
-			minuteOffset = 45;
-		} else {
-			minuteOffset = 0;
-		}
-
 		let currentConvert: TimezoneInformation = {
-			...currentTime,
-			time: { hour: currentTime.time.hour, minute: minuteOffset },
+			...timeData,
+			time: { hour: timeData.time.hour, minute: calculateMinuteOffset(timeData.utcOffsetSeconds, utcMinutes) },
 		};
 
 		for (let i = 1; i <= 24; i++) {
 			if (currentConvert.time.hour === 23) {
-				const paddedMinute = currentConvert.time.minute.toString().padStart(2, "0");
-				const paddedHour = currentConvert.time.hour.toString().padStart(2, "0");
-				const paddedDay = currentConvert.date.day.toString().padStart(2, "0");
-				const paddedMonth = currentConvert.date.month.toString().padStart(2, "0");
-				const dateTimeFormatted = `${currentConvert.date.year}-${paddedMonth}-${paddedDay} ${paddedHour}:${paddedMinute}:00`;
+				const paddedHour = padDateTime(currentConvert.time.hour);
+				const paddedDay = padDateTime(currentConvert.date.day);
+				const paddedMonth = padDateTime(currentConvert.date.month);
+				const dateTimeFormatted = `${currentConvert.date.year}-${paddedMonth}-${paddedDay} ${paddedHour}:00:00`;
 
 				try {
 					const data = await fetch("https://timeapi.io/api/calculation/custom/increment", {
@@ -168,11 +195,22 @@ const ConverterCard = () => {
 					});
 
 					const calculationResult = data.calculationResult;
-
+					const dateFormatted = `${padDateTime(calculationResult.day)}-${padDateTime(calculationResult.month)}-${
+						calculationResult.year
+					}`;
 					currentConvert = {
 						...currentConvert,
-						date: { day: calculationResult.day, month: calculationResult.month, year: calculationResult.year },
-						time: { hour: calculationResult.hour, minute: calculationResult.minute },
+						date: {
+							dateString: dateFormatted,
+							day: calculationResult.day,
+							month: calculationResult.month,
+							year: calculationResult.year,
+						},
+						time: {
+							timeString: calculationResult.time, // already padded
+							hour: calculationResult.hour,
+							minute: calculationResult.minute,
+						},
 						isHoliday: isHoliday,
 					};
 				} catch (err) {
@@ -181,7 +219,11 @@ const ConverterCard = () => {
 			} else {
 				currentConvert = {
 					...currentConvert,
-					time: { ...currentConvert.time, hour: (currentConvert.time.hour + 1) % 24 },
+					time: {
+						...currentConvert.time,
+						timeString: `${padDateTime(currentConvert.time.hour + 1)}:00`,
+						hour: (currentConvert.time.hour + 1) % 24,
+					},
 				};
 			}
 			initialTimezoneIncrements.push(currentConvert);
@@ -206,34 +248,20 @@ const ConverterCard = () => {
 					}}
 				/>
 
-				{currentTime && timezoneIncrements && (
-					<>
-						<div className="flex flex-col border-2 p-4">
-							<p>
-								{currentTime.date.day.toString().padStart(2, "0")}-{currentTime.date.month.toString().padStart(2, "0")}-
-								{currentTime.date.year}
-							</p>
-							<p>
-								{currentTime.time.hour.toString().padStart(2, "0")}:
-								{currentTime.time.minute.toString().padStart(2, "0")}
-							</p>
-						</div>
+				<div className="flex flex-col border-2 p-4">
+					<p>{currentTime?.date.dateString}</p>
+					<p>{currentTime?.time.timeString}</p>
+				</div>
 
-						<ul className="flex flex-col space-y-2">
-							{timezoneIncrements.map((item, index) => (
-								<li key={index} className="flex flex-col border-2 p-4">
-									<p>
-										{item.date.day.toString().padStart(2, "0")}-{item.date.month.toString().padStart(2, "0")}-
-										{item.date.year}
-									</p>
-									<p>
-										{item.time.hour.toString().padStart(2, "0")}:{item.time.minute.toString().padStart(2, "0")}
-									</p>
-								</li>
-							))}
-						</ul>
-					</>
-				)}
+				<ul className="flex flex-col space-y-2">
+					{timezoneIncrements?.map((item, index) => (
+						<li key={index} className="flex flex-col border-2 p-4">
+							<p>{item.date.dateString}</p>
+							<p>{item.time.timeString}</p>
+						</li>
+					))}
+				</ul>
+        
 			</div>
 		</div>
 	);
