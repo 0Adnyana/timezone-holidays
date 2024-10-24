@@ -8,6 +8,8 @@ type UtcTimeContextProviderProps = {
 type UtcTimeContextType = {
 	utcTime: string;
 	utcHour: string;
+	utcMinutes: string;
+	utcSeconds: string;
 };
 
 export const UtcTimeContext = createContext<UtcTimeContextType | null>(null);
@@ -15,6 +17,8 @@ export const UtcTimeContext = createContext<UtcTimeContextType | null>(null);
 const UtcTimeContextProvider = ({ children }: UtcTimeContextProviderProps) => {
 	const [utcTime, setUtcTime] = useState<string>("");
 	const [utcHour, setUtcHour] = useState<string>("");
+	const [utcMinutes, setUtcMinutes] = useState<string>("");
+	const [utcSeconds, setUtcSeconds] = useState<string>("");
 
 	const getUtcTime = () => {
 		const now = new Date();
@@ -27,25 +31,41 @@ const UtcTimeContextProvider = ({ children }: UtcTimeContextProviderProps) => {
 		}).format(now);
 
 		const currentUtcHour = now.getUTCHours().toString().padStart(2, "0");
+		const currentUtcMinute = now.getUTCMinutes().toString().padStart(2, "0");
+		const currentUtcSeconds = now.getUTCSeconds().toString().padStart(2, "0");
 
 		return {
 			currentUtcTime,
 			currentUtcHour,
+			currentUtcMinute,
+			currentUtcSeconds,
 		};
 	};
 
 	useEffect(() => {
 		const timeNow = setInterval(() => {
-			const { currentUtcTime, currentUtcHour } = getUtcTime();
+			const { currentUtcTime, currentUtcHour, currentUtcMinute, currentUtcSeconds } = getUtcTime();
 			setUtcTime(currentUtcTime);
 
 			setUtcHour((prevHour) => {
 				if (prevHour !== currentUtcHour) {
-					console.log(`Hour changed to: ${currentUtcHour}`);
-
 					return currentUtcHour;
 				}
 				return prevHour;
+			});
+
+			setUtcMinutes((prevMinutes) => {
+				if (prevMinutes !== currentUtcMinute) {
+					return currentUtcMinute;
+				}
+				return prevMinutes;
+			});
+
+			setUtcSeconds((prevSeconds) => {
+				if (prevSeconds !== currentUtcSeconds) {
+					return currentUtcSeconds;
+				}
+				return prevSeconds;
 			});
 		}, 1000);
 
@@ -59,6 +79,8 @@ const UtcTimeContextProvider = ({ children }: UtcTimeContextProviderProps) => {
 			value={{
 				utcTime,
 				utcHour,
+				utcMinutes,
+				utcSeconds,
 			}}
 		>
 			{children}

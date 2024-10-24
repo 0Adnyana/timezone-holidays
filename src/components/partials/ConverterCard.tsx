@@ -13,6 +13,7 @@ type TimezoneInformation = {
 	time: {
 		hour: number;
 		minute: number;
+		seconds?: number;
 	};
 	timezone: string;
 	countryCode: string;
@@ -37,9 +38,10 @@ const validateInput = (input: string): string | null => {
 const ConverterCard = () => {
 	const [search, setSearch] = useState("");
 	const [geoInformation, setGeoInformation] = useState<GeoInformation>();
+	const [initialCurrentTime, setinitialCurrentTime] = useState<TimezoneInformation>();
 	const [currentTime, setCurrentTime] = useState<TimezoneInformation>();
 	const [timezoneIncrements, setTimezoneIncrements] = useState<TimezoneInformation[]>();
-	const { utcTime, utcHour } = useUtcTimeContext();
+	const { utcTime, utcHour, utcMinutes, utcSeconds } = useUtcTimeContext();
 
 	useEffect(() => {
 		console.log(geoInformation);
@@ -47,9 +49,10 @@ const ConverterCard = () => {
 	}, [geoInformation]);
 
 	useEffect(() => {
-		console.log(currentTime);
+		console.log(initialCurrentTime);
+		setCurrentTime(initialCurrentTime);
 		fetchTimezoneIncrements();
-	}, [currentTime]);
+	}, [initialCurrentTime]);
 
 	useEffect(() => {
 		console.log(timezoneIncrements);
@@ -69,7 +72,6 @@ const ConverterCard = () => {
 
 			const geometry: Point = searchResult.features[0].geometry as Point;
 			const property = searchResult.features[0].properties;
-			// let location: string = "";
 
 			if (property && geometry) {
 				setGeoInformation({
@@ -111,7 +113,7 @@ const ConverterCard = () => {
 				`https://timeapi.io/api/timezone/coordinate?latitude=${geoInformation.latitude}&longitude=${geoInformation.longitude}`
 			).then((res) => res.json());
 
-			setCurrentTime({
+			setinitialCurrentTime({
 				date: { day: timeData.day, month: timeData.month, year: timeData.year },
 				time: { hour: timeData.hour, minute: timeData.minute },
 				timezone: timezoneData.timeZone,
@@ -125,22 +127,22 @@ const ConverterCard = () => {
 	};
 
 	const fetchTimezoneIncrements = async () => {
-		if (!currentTime) return;
+		if (!initialCurrentTime) return;
 
 		const initialTimezoneIncrements: TimezoneInformation[] = [];
 
 		let minuteOffset; // for currentConvert -> India, Iran, and more have 30 minute offsets, Nepal has 45.
-		if (currentTime.utcOffsetSeconds % 3600 == 1800) {
+		if (initialCurrentTime.utcOffsetSeconds % 3600 == 1800) {
 			minuteOffset = 30;
-		} else if (currentTime.utcOffsetSeconds % 3600 == 2700) {
+		} else if (initialCurrentTime.utcOffsetSeconds % 3600 == 2700) {
 			minuteOffset = 45;
 		} else {
 			minuteOffset = 0;
 		}
 
 		let currentConvert: TimezoneInformation = {
-			...currentTime,
-			time: { hour: currentTime.time.hour, minute: minuteOffset },
+			...initialCurrentTime,
+			time: { hour: initialCurrentTime.time.hour, minute: minuteOffset },
 		};
 
 		for (let i = 1; i <= 24; i++) {
