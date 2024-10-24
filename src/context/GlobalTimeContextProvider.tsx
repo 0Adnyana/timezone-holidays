@@ -7,18 +7,18 @@ type UtcTimeContextProviderProps = {
 
 type UtcTimeContextType = {
 	utcTime: string;
-	utcHour: string;
-	utcMinutes: string;
-	utcSeconds: string;
+	utcHour: number;
+	utcMinutes: number;
+	utcSeconds: number;
 };
 
 export const UtcTimeContext = createContext<UtcTimeContextType | null>(null);
 
 const UtcTimeContextProvider = ({ children }: UtcTimeContextProviderProps) => {
 	const [utcTime, setUtcTime] = useState<string>("");
-	const [utcHour, setUtcHour] = useState<string>("");
-	const [utcMinutes, setUtcMinutes] = useState<string>("");
-	const [utcSeconds, setUtcSeconds] = useState<string>("");
+	const [utcHour, setUtcHour] = useState<number>(0);
+	const [utcMinutes, setUtcMinutes] = useState<number>(0);
+	const [utcSeconds, setUtcSeconds] = useState<number>(0);
 
 	const getUtcTime = () => {
 		const now = new Date();
@@ -30,9 +30,9 @@ const UtcTimeContextProvider = ({ children }: UtcTimeContextProviderProps) => {
 			timeZone: "UTC",
 		}).format(now);
 
-		const currentUtcHour = now.getUTCHours().toString().padStart(2, "0");
-		const currentUtcMinute = now.getUTCMinutes().toString().padStart(2, "0");
-		const currentUtcSeconds = now.getUTCSeconds().toString().padStart(2, "0");
+		const currentUtcHour = now.getUTCHours();
+		const currentUtcMinute = now.getUTCMinutes();
+		const currentUtcSeconds = now.getUTCSeconds();
 
 		return {
 			currentUtcTime,
